@@ -5,9 +5,6 @@ __pycache__/
 # Ignore virtual environment directories
 venv/
 
-# Ignore text files that store image data
-*.txt
-
 # Ignore any local configurations or log files
 *.log
 *.sqlite3
