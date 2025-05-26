@@ -4,25 +4,25 @@ import numpy as np
 import math
 import Preprocess
 import os
+import requests
 from PIL import Image
-
-from db import luu_bien_so, cap_nhat_xe_ra
 
 st.set_page_config(layout="wide")
 st.title("Nhận diện biển số xe theo thời gian thực")
 
+# API endpoints
+DATABASE_API_SAVE = "http://localhost:8001/save_license_plate"
+DATABASE_API_EXIT = "http://localhost:8001/update_exit"
+
+# Configuration
 ADAPTIVE_THRESH_BLOCK_SIZE = 19
 ADAPTIVE_THRESH_WEIGHT = 9
-
 Min_char_area = 0.015
 Max_char_area = 0.06
-
 Min_char = 0.01
 Max_char = 0.09
-
 Min_ratio_char = 0.25
 Max_ratio_char = 0.7
-
 RESIZED_IMAGE_WIDTH = 20
 RESIZED_IMAGE_HEIGHT = 30
 
@@ -40,7 +40,7 @@ kNearest.train(npaFlattenedImages, cv2.ml.ROW_SAMPLE, npaClassifications)
 # OpenCV camera
 cap = cv2.VideoCapture(0)
 
-# Giao diện 2 cột video
+# Two-column layout for video
 col1, col2 = st.columns(2)
 frame_placeholder1 = col1.empty()
 frame_placeholder2 = col2.empty()
@@ -53,7 +53,7 @@ che_do = st.radio("Chọn chế độ ghi nhận", ["Vào", "Ra"], horizontal=Tr
 if "camera_on" not in st.session_state:
     st.session_state.camera_on = False
 
-# Nút bật/tắt camera
+# Start/Stop camera button
 if st.button("Bật / Tắt Video"):
     st.session_state.camera_on = not st.session_state.camera_on
 
@@ -68,10 +68,9 @@ while cap.isOpened():
         break
 
     tongframe += 1
-    raw_img = img.copy()  # giữ lại ảnh gốc
+    raw_img = img.copy()
 
     strFinalString = ""
-
     imgGrayscaleplate, imgThreshplate = Preprocess.preprocess(img)
     canny_image = cv2.Canny(imgThreshplate, 250, 255)
     kernel = np.ones((3, 3), np.uint8)
@@ -145,8 +144,6 @@ while cap.isOpened():
                 char_x.append(x)
                 char_x_ind[x] = ind
 
-        
-        
         if len(char_x) in range(7, 10):
             cv2.drawContours(img, [screenCnt], -1, (0, 255, 0), 3)
             char_x.sort()
@@ -160,7 +157,6 @@ while cap.isOpened():
 
                 _, npaResults, _, _ = kNearest.findNearest(npaROIResized, k=3)
                 strCurrentChar = str(chr(int(npaResults[0][0])))
-
                 if y < height / 3:
                     first_line += strCurrentChar
                 else:
@@ -170,23 +166,29 @@ while cap.isOpened():
             cv2.putText(img, strFinalString, (topy, topx), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
             biensotimthay += 1
 
-    # Hiển thị 2 video
+    # Display videos
     raw_img_resized = cv2.resize(raw_img, (640, 480))
     processed_img_resized = cv2.resize(img, (640, 480))
     frame_placeholder1.image(raw_img_resized, caption="Video gốc", channels="BGR")
     frame_placeholder2.image(processed_img_resized, caption="Video đã xử lý", channels="BGR")
 
-    if tongframe % 10 == 0:
-        # st.write(f"Biển số tìm thấy: {biensotimthay}")
-        # st.write(f"Tổng số khung hình: {tongframe}")
-        # st.write(f"Tỉ lệ phát hiện: {100 * biensotimthay / tongframe:.2f}%")
-        if strFinalString != "" and len(strFinalString) in [8, 9]:
+    # Call Database Service APIs
+    if tongframe % 10 == 0 and strFinalString and len(strFinalString) in [8, 9]:
+        try:
             if che_do == "Vào":
-                luu_bien_so(strFinalString, tongframe)
+                response = requests.post(DATABASE_API_SAVE, json={"bien_so": strFinalString, "frame_count": tongframe})
+                if response.status_code == 200:
+                    result = response.json()
+                    if result["status"] == "Vào":
+                        st.toast(f"✅ Xe: {result['bien_so']} đã vào bãi gửi.", icon="🚗")
             else:
-                cap_nhat_xe_ra(strFinalString)
-
-    # if not st.button("Tiếp tục", key=f"frame_{tongframe}"):
-    #     break
+                response = requests.post(DATABASE_API_EXIT, json={"bien_so": strFinalString})
+                if response.status_code == 200:
+                    result = response.json()
+                    if "tong_tien" in result:
+                        st.toast(f"""🚙 Xe {result['bien_so']} đã rời bãi.
+                        💰 Phí gửi: {result['tong_tien']:,} VND""")
+        except requests.RequestException as e:
+            st.error(f"Lỗi khi gọi API: {e}")
 
 cap.release()
