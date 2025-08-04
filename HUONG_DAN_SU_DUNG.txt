@@ -1,0 +1,86 @@
+HƯỚNG DẪN SỬ DỤNG HỆ THỐNG NHẬN DIỆN BIỂN SỐ XE
+==============================================
+
+1. YÊU CẦU HỆ THỐNG
+-------------------
+- Python phiên bản 3.8 trở lên
+- Camera (tích hợp hoặc ngoại vi)
+- Hệ điều hành: Windows/Linux/MacOS
+- Kết nối internet ổn định
+
+2. CÁCH CÀI ĐẶT
+---------------
+Bước 1: Tạo môi trường ảo
+    py -m venv venv
+
+Bước 2: Kích hoạt môi trường ảo
+    Windows: venv\Scripts\activate
+    Linux/Mac: source venv/bin/activate
+
+Bước 3: Cài đặt các thư viện cần thiết
+    pip install -r requirements.txt
+
+3. KHỞI ĐỘNG HỆ THỐNG
+---------------------
+Bước 1: Khởi động Database Service (Terminal 1)
+    cd nhandienbiensoxe/backend/database_service
+    uvicorn main:app --host 0.0.0.0 --port 8000
+
+Bước 2: Khởi động Logic Service (Terminal 2)
+    cd nhandienbiensoxe/backend/logic_service
+    uvicorn main:app --host 0.0.0.0 --port 8001
+
+Bước 3: Khởi động Giao diện người dùng (Terminal 3)
+    cd nhandienbiensoxe
+    streamlit run app.py
+
+4. CÁCH SỬ DỤNG
+---------------
+1. Truy cập giao diện:
+   - Mở trình duyệt web
+   - Truy cập: http://localhost:8501
+
+2. Các chức năng chính:
+   a. Nhận diện biển số:
+      - Chọn chế độ "Vào" hoặc "Ra"
+      - Nhấn "Bật/Tắt Video" để bắt đầu
+      - Đặt biển số xe vào khung hình
+      - Hệ thống sẽ tự động nhận diện
+
+   b. Theo dõi:
+      - Video gốc: Hiển thị hình ảnh từ camera
+      - Video đã xử lý: Hiển thị kết quả nhận diện
+
+   c. Thông báo:
+      - Xe vào: Hiển thị biển số đã ghi nhận
+      - Xe ra: Hiển thị biển số và phí gửi xe
+
+5. XỬ LÝ SỰ CỐ
+--------------
+1. Không nhận diện được biển số:
+   - Kiểm tra ánh sáng
+   - Điều chỉnh góc camera
+   - Đảm bảo biển số sạch và rõ ràng
+
+2. Lỗi kết nối:
+   - Kiểm tra các service đã chạy đủ chưa
+   - Kiểm tra cổng 8000, 8001 có bị chiếm không
+   - Đảm bảo camera hoạt động tốt
+
+3. Nhận diện sai:
+   - Điều chỉnh khoảng cách camera
+   - Cải thiện điều kiện ánh sáng
+   - Làm sạch biển số xe
+
+6. LƯU Ý QUAN TRỌNG
+------------------
+- Đảm bảo đủ ánh sáng khi nhận diện
+- Góc camera thẳng với biển số
+- Khoảng cách phù hợp (1-2m)
+- Tất cả các service phải chạy đồng thời
+- Không tắt đột ngột các terminal đang chạy
+
+7. THÔNG TIN LIÊN HỆ HỖ TRỢ
+--------------------------
+- Email: anhhung03102003@gmail.com
+- Hotline: 0961992655

@@ -168,8 +168,8 @@ st.markdown("""
 # Footer
 st.markdown("""
     <div class="footer">
-        <p style='margin-bottom: 0.5rem;'>© 2024 Hệ Thống Quản Lý Bãi Đỗ Xe</p>
-        <p style='font-size: 0.9em; opacity: 0.8;'>Phát triển bởi Nhóm Sinh Viên</p>
+        <p style='margin-bottom: 0.5rem;'>© 2025 Hệ Thống Quản Lý Bãi Đỗ Xe</p>
+        <p style='font-size: 0.9em; opacity: 0.8;'>Phát triển bởi Nhóm 3 Lớp 21CN5</p>
     </div>
 """, unsafe_allow_html=True)
 
